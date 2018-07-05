@@ -120,4 +120,70 @@ If your use case is confirmed, do the following:
 
 check it : `docker exec -it test id`
 
+## Build the project
+
+### First time
+
+```bash
+mkdir -p ~/go/src
+git clone https://github.com/forj-oss/docker-lu.git
+source build-env.sh ~/go
+create-go-build-env.sh
+glide i
+go build
+```
+
+You can add --sudo if your docker is runnable from sudo only
+
+**NOTE**: ~/go is your GOPATH. Change ~/go or update .be-gopath to a different path if your project is cloned somewhere else.
+
+### Next time
+
+```bash
+cd ~/go/src/docker-lu
+build-env
+glide i
+go build
+```
+
+### troubleshoot
+
+- Running `glide` or `go` return following error. How to fix it?
+
+    ```bash
+    ++ sudo docker run --rm -i -t -v /home/larsonsh/src/forj:/go -w /go/src/docker-lu -u 10001 docker-lu-go-env /usr/bin/glide init
+    Unable to find image 'docker-lu-go-env:latest' locally
+    docker: Error response from daemon: repository docker-lu-go-env not found: does not exist or no pull access.
+    See 'docker run --help'.
+    ++ _be_restore_debug
+    ++ [[ '' != x ]]
+    ++ set +x
+    ```
+
+    Run create-go-build-env.sh
+
+- Running `source build-env.sh` return following error. How to fix it?
+
+    ```bash
+    $ source build-env.sh
+    Loading module go ...
+    Using docker directly. (no sudo)
+    Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.29/version: dial unix /var/run/docker.sock: connect: permission denied
+    ```
+
+    source it with --sudo or fix the docker socket group.
+    `source build-env.sh --sudo`
+
+- Running `source build-env.sh` return following error. How to fix it?
+
+    ```bash
+    $ source build-env.sh
+    Loading module go ...
+    Using docker directly. (no sudo)
+    Missing GOPATH. Please set it, or define it in your local personal '.be-gopath' file
+    ```
+    You missed to provide the GOPATH setup
+
+    Call `source build-env.ss ~/go`
+
 Forj Team
