@@ -2,14 +2,14 @@
 
 ## Introduction
 
-docker-lu is a small GO program to adapt container files, /etc/passwd & /etc/group, with docker host local user UID & GID.
+docker-lu is a small GO program that adapts container files, /etc/passwd, and /etc/group with docker host local user UID & GID.
 
 ## The use case is:
 
-When a user execute a container as himself on his filesystem, the container can creates files.
-Those files must not be owned by a user ID which is not himself.
+When a user executes a container as himself on his file system, the container can create files.
+The created files must not be owned by a user ID that is not the user himself.
 
-The following example show a correct behavior.
+The following example shows correct behavior.
 
 ```bash
 [me@localhost tmp ] ll
@@ -20,9 +20,9 @@ total 4
 -rw-r--r-- 1 me me 7 Jul  5 16:14 test.txt
 ```
 
-As you can see, it works.
+This command works.
 
-But if you call a more advanced command like `git`, you may receive an error like `fatal: unable to look up current user in the passwd file: no such user`
+However, using a more advanced command like `git` can result in an error such as `fatal: unable to look up current user in the passwd file: no such user`
 
 ```bash
 [me@localhost tmp ] docker run --rm -e http_proxy -e https_proxy -e no_proxy -it -u 1001:1001 forjdevops/jenkins git clone https://github.com/forj-oss/jenkins-install-inits /tmp/jenkins-install-inits
@@ -38,11 +38,11 @@ Unexpected end of command stream
 You cannot replace the `-u $(id -u):$(id -g)` by `-u $(id -un):$(id -gn)` or you may get following error: 
 `docker: Error response from daemon: linux spec user: unable to find user me: no matching entries in passwd file.`
 
-Why are we having this issue? Because, your uid or username is not recognized in the container. ie you are not in the container passwd file.
+Why are we having this issue? The user's uid or username is not recognized in the container. This means the uid or username is not in the container passwd file.
 
 ## How to resolve it?
 
-To resolve this, we need to ensure that UID/GID given is listed in `/etc/passwd` and `/etc/group` in the container.
+To resolve this, we need to ensure that the UID/GID given is listed in `/etc/passwd` and `/etc/group` in the container.
 
 You can fix it easily with a basic bash script to run as root:
 
@@ -53,22 +53,18 @@ sed -i 's/\(devops:x:\)1000/\1'"$2"'/g' /etc/group
 
 If `sed` has been installed you can use that code.
 
-but if `sed` is not installed, you have to :
+If `sed` is not installed, you have to :
 - install it
-- create a script with those 2 `sed` commands, and probably check parameters...
+- create a script with those 2 `sed` commands, and check parameters.
 
-To be honest, it is not a big deal to do this.
-
-`docker-lu` globally do exactly this.
+Using `docker-lu` globally can do exactly this.
 
 Why did we created a GO program instead of a script to do this?
 
-because:
-
-- you do not need install anything else than docker-lu
-- you do not need to create a script to test parameters. docker-lu do that
-- you limit the risk to break your container if your script update wrongly those files (bad error handling)
-- docker-lu refuses to work outside a container and as non container root.
+- you do not need install anything other than docker-lu
+- you do not need to create a script to test parameters, docker-lu will handle it
+- you limit the risk of breaking your container if your script incorrectly updates those files (bad error handling)
+- docker-lu refuses to work outside a container and as non-container root.
 
 ## How to use docker-lu
 
@@ -76,7 +72,7 @@ You should use docker-lu if all following conditions are true
 
 - if you add `-u` to `docker run`
 - if your container has a local FS mounted (`-v /local/fs:/data`)
-- if your container write/update the mounted path with the user rights given (`-u`)
+- if your container writes to/updates the mounted path with the user rights given (`-u`)
 - if the user uid is not recognized in the /etc/passwd of the container
 - if you REALLY need to be in the /etc/passwd (because of git, npm, go, etc...)
 
@@ -84,13 +80,13 @@ If your use case is confirmed, do the following:
 
 ### Use case 1 - Dockerfile
 
-You can add `docker-lu` in your docker image and call it as root during the entrypoint and become that user with `su -` or any equivalent command.
+You can add `docker-lu` in your docker image, call it as root during the entrypoint and then become that user with `su -` or any equivalent command.
 
 1. Add `ADD https://github.com/forj-oss/docker-lu/releases/0.1/docker-lu /usr/local/bin/docker-lu`
 2. Add `RUN chmod +x /usr/local/bin/docker-lu`
 3. Add a call to docker-lu in the entrypoint. ex: `ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]`
 
-    ... assume jenkins exist as user in the image ...
+    ... assume jenkins exists as user in the image ...
     
     ```bash
     [...]
@@ -137,8 +133,8 @@ This section explains how to build it.
 If you want to debug through a IDE, it works great from Visual Studio Code under linux.
 I never tested in other OS.
 
-I was using idea, but not it is unuable, because they built a non free IDE called goglang. 
-And by the way, I was never capable to debug test files... From VSC, both works and are free (Opensource)
+I was using idea, but not it is unusable, because they built a non free IDE called goglang. 
+I was not able to debug test files... From VSC, both work and are free (Opensource)
 
 ### First time
 
@@ -200,7 +196,7 @@ go build
     Using docker directly. (no sudo)
     Missing GOPATH. Please set it, or define it in your local personal '.be-gopath' file
     ```
-    You missed to provide the GOPATH setup
+    You missed providing the GOPATH setup
 
     Call `source build-env.ss ~/go`
 
