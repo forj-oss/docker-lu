@@ -2,7 +2,7 @@
 
 ## Introduction
 
-docker-lu is a small GO program to adapt container files, /etc/passwd & /etc/groups, with docker host local user UID & GID.
+docker-lu is a small GO program to adapt container files, /etc/passwd & /etc/group, with docker host local user UID & GID.
 
 ## The use case is:
 
