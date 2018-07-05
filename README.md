@@ -115,7 +115,7 @@ If your use case is confirmed, do the following:
     
     `docker run -u $(id -u):$(id -g) --name test -it -d alpine sh -c 'adduser developer -D;cat'`
 4. copy docker-lu: `docker copy ~/bin/docker-lu test:/usr/bin/docker-lu`
-5. run it : `docker exec -it test docker-lu developer $(id -u) developer $(id -g)`
+5. run it : `docker exec -u 0 -it test docker-lu developer $(id -u) developer $(id -g)`
 
 
 check it : `docker exec -it test id`

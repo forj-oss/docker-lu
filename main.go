@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -29,39 +30,150 @@ func main() {
 	update()
 }
 
+const (
+	passwd     = "/etc/passwd"
+	passwdTmp  = "/etc/passwd.tmp"
+	passwdBack = "/etc/passwd.backup"
+	group      = "/etc/group"
+	groupTmp   = "/etc/group.tmp"
+	groupBack  = "/etc/group.backup"
+	cgroup     = "/proc/self/cgroup"
+)
+
 func update() {
-	checkRights()
-	defer cleanup()
+	if err := checkRights(); err != nil {
+		log.Fatalf("Unable to update files. %s. Aborted", err)
+	}
 	updateParse()
+
+	defer cleanup()
+
 	if err := updatePasswd(); err != nil {
-		log.Fatal("Unable to update /etc/passwd. %s", err)
+		log.Fatalf("Unable to update %s. %s. Aborted", passwd, err)
 	}
 	if err := updateGroup(); err != nil {
-		log.Fatal("Unable to update /etc/passwd. %s", err)
+		log.Fatalf("Unable to update %s. %s. Aborted", group, err)
 	}
 	applyUpdates()
+	fmt.Println("DONE")
 }
 
 func cleanup() {
-	
+	if info, err := os.Stat(passwdTmp); err == nil && !info.IsDir() {
+		os.Remove(passwdTmp)
+	}
+	if info, err := os.Stat(groupTmp); err == nil && !info.IsDir() {
+		os.Remove(groupTmp)
+	}
 }
 
-func checkRights() {
+func checkRights() error {
 	// Must be root
+	if os.Getuid() != 0 {
+		return fmt.Errorf("docker-lu must be executed as root. Exiting")
+	}
 	// Must be inside a container
+	if _, err := os.Stat(cgroup); err != nil {
+		return fmt.Errorf("Unable to check %s. %s", cgroup, err)
+	}
+	var cgroupData []byte
+	if d, err := ioutil.ReadFile(cgroup); err != nil {
+		return fmt.Errorf("Unable to read %s. %s", cgroup, err)
+	} else {
+		cgroupData = d
+	}
+
+	if ok, _ := regexp.Match("[0-9]+:[a-z_]*:/docker/[0-9a-f]*", cgroupData); !ok {
+		return fmt.Errorf("docker-lu must be executed inside a container")
+	}
+	return nil
 }
 
 func applyUpdates() {
-
+	if info, err := os.Stat(passwdTmp); err == nil && !info.IsDir() {
+		if info, err = os.Stat(passwdBack); err == nil && !info.IsDir() {
+			os.Remove(passwdBack)
+		}
+		os.Rename(passwd, passwdBack)
+		os.Rename(passwdTmp, passwd)
+	}
+	if info, err := os.Stat(groupTmp); err == nil && !info.IsDir() {
+		if info, err = os.Stat(groupBack); err == nil && !info.IsDir() {
+			os.Remove(groupBack)
+		}
+		os.Rename(group, groupBack)
+		os.Rename(groupTmp, group)
+	}
+	fmt.Printf("Passwd and group updated for user %s(%s) with uid:%d and gid:%d\n", app.username, app.groupname, app.uid, app.gid)
 }
 
 func updatePasswd() error {
-	ioutil.ReadFile("/etc/passwd")
+	passwdFileRead, err := os.Open(passwd)
+	if err != nil {
+		return fmt.Errorf("Unable to read %s. %s", passwd, err)
+	}
+	defer passwdFileRead.Close()
+
+	passwdFileWrite, err := os.Create(passwdTmp)
+	if err != nil {
+		return fmt.Errorf("Unable to write %s. %s", passwdTmp, err)
+	}
+	defer passwdFileWrite.Close()
+
+	updReg, _ := regexp.Compile("(" + app.username + ":x:)([0-9]*):([0-9]*):")
+
+	found := false
+	scan := bufio.NewScanner(passwdFileRead)
+	for scan.Scan() {
+		line := scan.Text()
+		if updReg.MatchString(line) {
+			newline := updReg.ReplaceAllString(line, "${1}"+strconv.Itoa(app.uid)+":"+strconv.Itoa(app.gid)+":")
+			if line != newline {
+				log.Printf("%s update to apply.", passwd)
+				line = newline
+			}
+			found = true
+		}
+		passwdFileWrite.WriteString(line + "\n")
+	}
+	if !found {
+		return fmt.Errorf("user %s not found", app.username)
+	}
 	return nil
 }
 
 func updateGroup() error {
-	ioutil.ReadFile("/etc/passwd")
+	groupFileRead, err := os.Open(group)
+	if err != nil {
+		return fmt.Errorf("Unable to read %s. %s", passwd, err)
+	}
+	defer groupFileRead.Close()
+
+	groupFileWrite, err := os.Create(groupTmp)
+	if err != nil {
+		return fmt.Errorf("Unable to write %s. %s", passwdTmp, err)
+	}
+	defer groupFileWrite.Close()
+
+	updReg, _ := regexp.Compile("(" + app.groupname + ":x:)([0-9]*):")
+
+	found := false
+	scan := bufio.NewScanner(groupFileRead)
+	for scan.Scan() {
+		line := scan.Text()
+		if updReg.MatchString(line) {
+			newline := updReg.ReplaceAllString(line, "${1}"+strconv.Itoa(app.gid)+":")
+			if line != newline {
+				log.Printf("%s update to apply.", group)
+				line = newline
+			}
+			found = true
+		}
+		groupFileWrite.WriteString(line + "\n")
+	}
+	if !found {
+		return fmt.Errorf("group %s not found", app.groupname)
+	}
 	return nil
 }
 
