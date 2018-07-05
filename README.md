@@ -9,7 +9,7 @@ docker-lu is a small GO program to adapt container files, /etc/passwd & /etc/gro
 When a user execute a container as himself on his filesystem, the container can creates files.
 Those files must not be owned by a user ID which is not himself.
 
-Ex:
+The following example show a correct behavior.
 
 ```bash
 [me@localhost tmp ] ll
@@ -36,7 +36,7 @@ Unexpected end of command stream
 ```
 
 You cannot replace the `-u $(id -u):$(id -g)` by `-u $(id -un):$(id -gn)` or you may get following error: 
-`docker: Error response from daemon: linux spec user: unable to find user larsonsh: no matching entries in passwd file.`
+`docker: Error response from daemon: linux spec user: unable to find user me: no matching entries in passwd file.`
 
 Why are we having this issue? Because, your uid or username is not recognized in the container. ie you are not in the container passwd file.
 
@@ -44,7 +44,7 @@ Why are we having this issue? Because, your uid or username is not recognized in
 
 To resolve this, we need to ensure that UID/GID given is listed in `/etc/passwd` and `/etc/group` in the container.
 
-Yoy can fix it easily with a basic bash script to run as root:
+You can fix it easily with a basic bash script to run as root:
 
 ```bash
 sed -i 's/\(devops:x:\)1000:1000/\1'"$1"':'"$2"'/g' /etc/passwd
@@ -53,21 +53,22 @@ sed -i 's/\(devops:x:\)1000/\1'"$2"'/g' /etc/group
 
 If `sed` has been installed you can use that code.
 
-but sed is not installed, you have to 
+but if `sed` is not installed, you have to :
 - install it
-- create a script with those 2 sed commands, and probably checking parameters...
+- create a script with those 2 `sed` commands, and probably check parameters...
 
 To be honest, it is not a big deal to do this.
 
 `docker-lu` globally do exactly this.
 
-Why don't we exposed a script to do this?
+Why did we created a GO program instead of a script to do this?
 
 because:
+
 - you do not need install anything else than docker-lu
-- you do not need to create a script to test parameters docker-lu has that
-- you limit the risk to break your container if you update wrongly those files
-- docker-lu refuses to work outside a container.
+- you do not need to create a script to test parameters. docker-lu do that
+- you limit the risk to break your container if your script update wrongly those files (bad error handling)
+- docker-lu refuses to work outside a container and as non container root.
 
 ## How to use docker-lu
 
@@ -77,10 +78,13 @@ You should use docker-lu if all following conditions are true
 - if your container has a local FS mounted (`-v /local/fs:/data`)
 - if your container write/update the mounted path with the user rights given (`-u`)
 - if the user uid is not recognized in the /etc/passwd of the container
+- if you REALLY need to be in the /etc/passwd (because of git, npm, go, etc...)
 
 If your use case is confirmed, do the following:
 
 ### Use case 1 - Dockerfile
+
+You can add `docker-lu` in your docker image and call it as root during the entrypoint and become that user with `su -` or any equivalent command.
 
 1. Add `ADD https://github.com/forj-oss/docker-lu/releases/0.1/docker-lu /usr/local/bin/docker-lu`
 2. Add `RUN chmod +x /usr/local/bin/docker-lu`
@@ -102,7 +106,9 @@ If your use case is confirmed, do the following:
 
 ### Use case 2 - docker run as daemon
 
-1. Download docker-lu. 
+If you run your container as daemon and execute commands through `docker exec`
+
+1. Download `docker-lu`. 
 
     `wget -O ~/bin/docker-lu https://github.com/forj-oss/docker-lu/releases/0.1/docker-lu`
 
@@ -121,6 +127,18 @@ If your use case is confirmed, do the following:
 check it : `docker exec -it test id`
 
 ## Build the project
+
+If you want to contribute to this project (bug/enhancement), feel free to create a PR or just ask through issues.
+
+This section explains how to build it.
+
+*Small IDE experience*:
+
+If you want to debug through a IDE, it works great from Visual Studio Code under linux.
+I never tested in other OS.
+
+I was using idea, but not it is unuable, because they built a non free IDE called goglang. 
+And by the way, I was never capable to debug test files... From VSC, both works and are free (Opensource)
 
 ### First time
 
