@@ -86,7 +86,7 @@ If your use case is confirmed, do the following:
 
 You can add `docker-lu` in your docker image and call it as root during the entrypoint and become that user with `su -` or any equivalent command.
 
-1. Add `ADD https://github.com/forj-oss/docker-lu/releases/0.1/docker-lu /usr/local/bin/docker-lu`
+1. Add `ADD https://github.com/forj-oss/docker-lu/releases/download/0.1/docker-lu /usr/local/bin/docker-lu`
 2. Add `RUN chmod +x /usr/local/bin/docker-lu`
 3. Add a call to docker-lu in the entrypoint. ex: `ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]`
 
@@ -110,7 +110,7 @@ If you run your container as daemon and execute commands through `docker exec`
 
 1. Download `docker-lu`. 
 
-    `wget -O ~/bin/docker-lu https://github.com/forj-oss/docker-lu/releases/0.1/docker-lu`
+    `wget -O ~/bin/docker-lu https://github.com/forj-oss/docker-lu/releases/download/0.1/docker-lu`
 
 2. Give executable rights
 
