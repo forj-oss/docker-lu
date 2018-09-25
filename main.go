@@ -83,7 +83,13 @@ func checkRights() error {
 		cgroupData = d
 	}
 
-	if ok, _ := regexp.Match("[0-9]+:[a-z_]*:/docker/[0-9a-f]*", cgroupData); !ok {
+	var isDocker bool = false
+	var isK8s bool = false
+
+	isDocker, _ := regexp.Match("[0-9]+:[a-z_]*:/docker/[0-9a-f]*", cgroupData)
+	isK8s, _ := regexp.Match("[0-9]+:[a-z_]*:/kubepods/[0-9a-f]*", cgroupData)
+
+	if !isDocker && !isK8s {
 		return fmt.Errorf("docker-lu must be executed inside a container")
 	}
 	return nil
