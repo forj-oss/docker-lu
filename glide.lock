@@ -1,6 +1,4 @@
-hash: 73aa96c79d9028651480e106fa23c6ac41e3a4ff2fc1de0dddfb5eda547a339f
-updated: 2018-09-21T14:55:31.1374315Z
-imports:
-- name: github.com/jessevdk/go-flags
-  version: c6ca198ec95c841fdb89fc0de7496fed11ab854e
+hash: 5d688dbfffd2f0c1dfc57a5f669338176263e9f3950b9d659917479bb2964bda
+updated: 2018-09-26T11:21:08.398165362Z
+imports: []
 testImports: []
