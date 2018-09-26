@@ -2,3 +2,5 @@
 docker-lu
 .vscode
 debug*
+.glide
+vendor
