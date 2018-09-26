@@ -18,6 +18,7 @@ function be_ci_detected {
     export CI_ENABLED=FALSE
     if [[ "$WORKSPACE" != "" ]]
     then
+        set +xe
         echo "Jenkins environment detected"
         export CI_WORKSPACE="$WORKSPACE"
         export CI_ENABLED=TRUE
