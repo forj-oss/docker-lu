@@ -83,9 +83,6 @@ func checkRights() error {
 		cgroupData = d
 	}
 
-	var isDocker bool = false
-	var isK8s bool = false
-
 	isDocker, _ := regexp.Match("[0-9]+:[a-z_]*:/docker/[0-9a-f]*", cgroupData)
 	isK8s, _ := regexp.Match("[0-9]+:[a-z_]*:/kubepods/[0-9a-f]*", cgroupData)
 
@@ -223,7 +220,7 @@ func updateParse() {
 }
 
 func showHelp() {
-	fmt.Print(`docker-lu - small GO program to adapt container files, /etc/passwd & /etc/group
+	fmt.Print(`docker-lu (0.1.1) - small GO program to adapt container files, /etc/passwd & /etc/group
 usage is:
 --help : This help page
 
