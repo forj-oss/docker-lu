@@ -40,7 +40,7 @@ You cannot replace the `-u $(id -u):$(id -g)` by `-u $(id -un):$(id -gn)` or you
 
 Why are we having this issue? The user's uid or username is not recognized in the container. This means the uid or username is not in the container passwd file.
 
-## How to resolve it?
+## How to resolve it
 
 To resolve this, we need to ensure that the UID/GID given is listed in `/etc/passwd` and `/etc/group` in the container.
 
@@ -64,11 +64,19 @@ Why did we created a GO program instead of a script to do this?
 - you do not need install anything other than docker-lu
 - you do not need to create a script to test parameters, docker-lu will handle it
 - you limit the risk of breaking your container if your script incorrectly updates those files (bad error handling)
-- docker-lu refuses to work outside a container and as non-container root.
+- docker-lu refuses to work outside a container (docker or kubernetes) and as non-container root.
 
 ## How to use docker-lu
 
-You should use docker-lu if all following conditions are true
+### Requirements
+
+docker-lu is a simple small (2.5 MB) linux static binary. So there is no dependency on your container linux flavor.
+docker-lu checks if it is running in container. It supports docker and kubernetes containers. For other type of 
+container, consider to contribute to the project. (function `checkRights()`)
+
+### Do I need docker-lu
+
+You should use docker-lu if all following conditions are true:
 
 - if you add `-u` to `docker run`
 - if your container has a local FS mounted (`-v /local/fs:/data`)
@@ -199,5 +207,7 @@ go build
     You missed providing the GOPATH setup
 
     Call `source build-env.ss ~/go`
+
+
 
 Forj Team
