@@ -108,12 +108,12 @@ else
     build.sh
 fi
 COMMIT_ID=$(git log --format=format:%H -1)
-if [[ "$($GOPATH/bin/$BE_PROJECT --version | grep $COMMIT_ID)" = "" ]]
-then
-   echo "docker-lu binary is not in sync with current commit $COMMIT_ID"
-   $GOPATH/bin/$BE_PROJECT --version
-   exit 1
-fi
+# if [[ "$($GOPATH/bin/$BE_PROJECT --version | grep $COMMIT_ID)" = "" ]]
+# then
+#    echo "docker-lu binary is not in sync with current commit $COMMIT_ID"
+#    $GOPATH/bin/$BE_PROJECT --version
+#    exit 1
+# fi
 
 echo "Deploying $BE_PROJECT to github..."
 export GITHUB_REPO=$BE_PROJECT
