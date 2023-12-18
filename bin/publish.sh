@@ -4,9 +4,9 @@
 # - When a new PR has been merged to the master branch. It generates the latest version
 # - when a decision is made to officially published a new release
 
-# In both case, it assumes forjj git clone is configured as follow:
+# In both case, it assumes docker-lu git clone is configured as follow:
 # - remote origin is pointing out to a fork
-# - remote upstream is connected to forj-oss/forjj, with read/write access
+# - remote upstream is connected to forj-oss/docker-lu, with read/write access
 # - The local branch must be master and should be connected to origin/master. Not upstream/master.
 
 # If one of this condition is not respected, the script will exit.
@@ -53,12 +53,12 @@ then
     REMOTE="$(git remote -v | grep "^upstream")"
     if [ "$REMOTE" = "" ]
     then
-        echo "upstream is missing. You must have it configured (git@github.com:forj-oss/forjj.git) and rights given to push"
+        echo "upstream is missing. You must have it configured (git@github.com:forj-oss/docker-lu.git) and rights given to push"
         exit 1
     fi
-    if [[ ! "$REMOTE" =~ git@github\.com:forj-oss/forjj\.git ]]
+    if [[ ! "$REMOTE" =~ git@github\.com:forj-oss/docker-lu\.git ]]
     then
-        echo "upstream is wrongly configured. It must be set with git@github.com:forj-oss/forjj.git"
+        echo "upstream is wrongly configured. It must be set with git@github.com:forj-oss/docker-lu.git"
         exit 1
     fi
     git stash # Just in case
@@ -110,7 +110,7 @@ fi
 COMMIT_ID=$(git log --format=format:%H -1)
 if [[ "$($GOPATH/bin/$BE_PROJECT --version | grep $COMMIT_ID)" = "" ]]
 then
-   echo "forjj binary is not in sync with current commit $COMMIT_ID"
+   echo "docker-lu binary is not in sync with current commit $COMMIT_ID"
    $GOPATH/bin/$BE_PROJECT --version
    exit 1
 fi
@@ -136,7 +136,7 @@ fi
 # Checking binary build info
 if [[ "$($GOPATH/bin/$BE_PROJECT --version | grep $COMMIT_ID)" = "" ]]
 then
-   echo "forjj binary is not in sync with current commit $COMMIT_ID"
+   echo "docker-lu binary is not in sync with current commit $COMMIT_ID"
    tmp/$BE_PROJECT --version
    exit 1
 fi
@@ -145,12 +145,12 @@ gothub upload --tag $TAG --name $BE_PROJECT --file $GOPATH/bin/$BE_PROJECT --rep
 
 mkdir -p tmp
 rm -f tmp/$BE_PROJECT
-curl -Lo tmp/$BE_PROJECT https://github.com/forj-oss/forjj/releases/download/$TAG/$BE_PROJECT
+curl -Lo tmp/$BE_PROJECT https://github.com/forj-oss/docker-lu/releases/download/$TAG/$BE_PROJECT
 chmod +x tmp/$BE_PROJECT
 
 if [[ "$(tmp/$BE_PROJECT --version | grep $COMMIT_ID)" = "" ]]
 then
-   echo "forjj binary is not in sync with current commit $COMMIT_ID"
+   echo "docker-lu binary is not in sync with current commit $COMMIT_ID"
    tmp/$BE_PROJECT --version
    exit 1
 fi
