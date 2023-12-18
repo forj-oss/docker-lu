@@ -38,6 +38,7 @@ const (
 	groupTmp   = "/etc/group.tmp"
 	groupBack  = "/etc/group.backup"
 	cgroup     = "/proc/self/cgroup"
+	mountinfo  = "/proc/self/mountinfo"
 )
 
 func update() {
@@ -86,7 +87,21 @@ func checkRights() error {
 	isDocker, _ := regexp.Match("[0-9]+:[a-z_]*:/docker/[0-9a-f]*", cgroupData)
 	isK8s, _ := regexp.Match("[0-9]+:[a-z_]*:/kubepods/[0-9a-f]*", cgroupData)
 
-	if !isDocker && !isK8s {
+	// Since docker version 20.10, cgroup v2 is used. In this case, cgroup file has no docker context in it. We must use something else.
+	// Changing mechanism detection to support both: https://stackoverflow.com/questions/68816329/how-to-get-docker-container-id-from-within-the-container-with-cgroup-v2
+	if _, err := os.Stat(mountinfo); err != nil {
+		return fmt.Errorf("Unable to check %s. %s", mountinfo, err)
+	}
+	var mountInfoData []byte
+	if d, err := ioutil.ReadFile(mountinfo); err != nil {
+		return fmt.Errorf("Unable to read %s. %s", mountinfo, err)
+	} else {
+		mountInfoData = d
+	}
+
+	isDockerV2, _ := regexp.Match("[0-9 ]+ /containers/[0-9a-f]*", mountInfoData)
+
+	if !isDocker && !isK8s && !isDockerV2 {
 		return fmt.Errorf("docker-lu must be executed inside a container")
 	}
 	return nil
