@@ -118,7 +118,7 @@ COMMIT_ID=$(git log --format=format:%H -1)
 echo "Deploying $BE_PROJECT to github..."
 export GITHUB_REPO=$BE_PROJECT
 # Removing the release everytime and ignore error.
-set +ex
+set +e -x
 gothub delete -t $TAG
 set -ex
 if [ "$TAG" = latest ]
