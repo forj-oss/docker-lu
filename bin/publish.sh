@@ -32,8 +32,8 @@ fi
 set -e
 if [ ! -f bin/gothub ]
 then
-   go get -d github.com/itchio/gothub
-   go build -o bin/gothub github.com/itchio/gothub
+   go get -d github.com/github-release/github-release
+   go build -o bin/gothub github.com/github-release/github-release
 fi
 
 if [[ "$CI_ENABLED" = "FALSE" ]]
